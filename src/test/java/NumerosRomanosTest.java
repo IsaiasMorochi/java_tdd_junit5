@@ -189,4 +189,23 @@ public class NumerosRomanosTest {
         assertEquals(romanos.get(7), "LXVII");
     }
 
+    @Test
+    public void verificarRomanos(){
+        List<Integer> numerosNaturales = Arrays.asList(100, 200, 300, 400, 500, 600, 700, 800, 900, 3234);
+        List<String> romanos = numerosNaturales.stream()
+                .map(number -> numerosRomanos.convertirRomanos(number))
+                .collect(Collectors.toList());
+
+        assertEquals(romanos.get(0), "C");
+        assertEquals(romanos.get(1), "CC");
+        assertEquals(romanos.get(2), "CCC");
+        assertEquals(romanos.get(3), "CD");
+        assertEquals(romanos.get(4), "D");
+        assertEquals(romanos.get(5), "DC");
+        assertEquals(romanos.get(6), "DCC");
+        assertEquals(romanos.get(7), "DCCC");
+        assertEquals(romanos.get(8), "CM");
+        assertEquals(romanos.get(9), "MMMCCXXXIV");
+    }
+
 }

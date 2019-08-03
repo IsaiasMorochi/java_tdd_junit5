@@ -6,21 +6,23 @@ import java.util.List;
  */
 public class NumerosRomanos {
 
-    private static final List<String> simbolosRomanos = Arrays.asList("I", "V", "X", "L", "C");
+    private static final List<String> simbolosRomanos = Arrays.asList("I", "V", "X", "L", "C", "D", "M");
 
     public String convertirRomanos(Integer numeroNatural) {
-        char[] numerosChart = numeroNatural.toString().toCharArray();
-        if (numerosChart.length >= 2){
-            String unidadRomana = generico(Character.getNumericValue(numerosChart[1]),0,1,2);
-            String decenaRomana = generico(Character.getNumericValue(numerosChart[0]),2,3,4);
-            return decenaRomana + unidadRomana;
-        }
-        if (numerosChart.length >= 1)
-            return generico(Character.getNumericValue(numerosChart[0]), 0, 1, 2);
 
-        return null;
+        char[] numerosChart = numeroNatural.toString().toCharArray();
+
+        int inc = 0;
+        String resultado = "";
+        for (int i = numerosChart.length - 1; i >= 0; i--) {
+            String romano = generico(Character.getNumericValue(numerosChart[i]),0 + inc,1 + inc,2 + inc);
+            resultado = romano + resultado;
+            inc += 2;
+        }
+        return resultado;
     }
 
+    //refactor
     private String generico(int decena, int x, int y, int z) {
         switch (decena){
             case 4:
@@ -42,63 +44,4 @@ public class NumerosRomanos {
         }
         return numeroHermano;
     }
-
-    /*
-    private String sumarI(int numeroNatural){
-        String resultado = "";
-        for (int i = 1; i <= numeroNatural; i++){
-            resultado += "I";
-        }
-        return resultado;
-    }
-
-    private String sumarIAPartirV(int numeroNatural){
-        String resultado = "V";
-        for (int i = 6; i <= numeroNatural; i++){
-            resultado += "I";
-        }
-        return resultado;
-    }
-
-    private String sumarI(int inicioCenta, int numeroNatural, String numeroHermano){
-        for (int i = inicioCenta; i <= numeroNatural; i++){
-            numeroHermano += "I";
-        }
-        return numeroHermano;
-    }
-
-    private String sumarX(int inicioCenta, int numeroNatural, String numeroHermano){
-        for (int i = inicioCenta; i <= numeroNatural; i++){
-            numeroHermano += "X";
-        }
-        return numeroHermano;
-    }
-
-    private String pasarDecena(int decena) {
-        switch (decena){
-            case 4:
-                return "XL";
-            case 9:
-                return "XC";
-        }
-        if (decena <= 3)
-            return sumar(1, decena,"","X");
-        if (decena <= 8)
-            return sumar(6, decena,"L","X");
-        return null;
-    }
-
-    private String pasarUnidad(int unidad) {
-        switch (unidad){
-            case 4:
-                return "IV";
-            case 9:
-                return "IX";
-        }
-        if (unidad <= 3)
-            return sumar(1,unidad,"","I");
-        if (unidad <= 8)
-            return sumar(6,unidad,"V","I");
-        return null;
-    }*/
 }
