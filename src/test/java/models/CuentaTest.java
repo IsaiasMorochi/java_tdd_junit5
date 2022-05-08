@@ -9,8 +9,10 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -39,7 +41,8 @@ class CuentaTest {
         this.testInfo = testInfo;
         this.testReporter = testReporter;
         this.cuenta = new Cuenta("Isaias", new BigDecimal("1000.12345"));
-        this.testReporter.publishEntry("Ejecutando: " + testInfo.getDisplayName() + " " + testInfo.getTestMethod().orElse(null).getName() + " con las etiquetas " + testInfo.getTags());
+        // log de Junit
+        testReporter.publishEntry("Ejecutando: " + testInfo.getDisplayName() + " " + testInfo.getTestMethod().orElse(null).getName() + " con las etiquetas " + testInfo.getTags());
     }
 
     @AfterEach
@@ -89,9 +92,9 @@ class CuentaTest {
         @Test
         @DisplayName("el nombre de la cuenta")
         void testNombreCuenta() {
-            System.out.println(testInfo.getTags());
+            System.out.println(String.format("Tags -> %s ", testInfo.getTags()));
             if (testInfo.getTags().contains("cuenta")) {
-                System.out.println("hacer algo con la etiqueta cuenta.");
+                testReporter.publishEntry("Hacer algo con la etiqueta cuenta.");
             }
             String esperado = "Isaias";
             String actual = cuenta.getPersona();
@@ -381,5 +384,28 @@ class CuentaTest {
 
     }
 
+    @Nested
+    @Tag("timeout")
+    class TimeoutTest {
+        @Test
+        @Timeout(1) //segundos
+        void testTimeoutOne() throws InterruptedException {
+            TimeUnit.MILLISECONDS.sleep(1);
+        }
+
+        @Test
+        @Timeout(value = 1000, unit = TimeUnit.MILLISECONDS) //segundos
+        void testTimeoutTwo() throws InterruptedException {
+            TimeUnit.MILLISECONDS.sleep(900);
+        }
+
+        @Test
+        void testTimeoutThree() {
+            assertTimeout(Duration.ofSeconds(5), () -> {
+                TimeUnit.MILLISECONDS.sleep(4000);
+            } );
+        }
+
+    }
 
 }
