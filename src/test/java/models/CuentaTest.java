@@ -37,53 +37,113 @@ class CuentaTest {
         System.out.println("Finalizando el test.");
     }
 
-    @Test
-    @DisplayName("probando el nombre de la cuenta")
-    void testNombreCuenta() {
-        String esperado = "Isaias";
-        String actual = cuenta.getPersona();
-        /*EL uso de lambda ayuda a no utilizar muchos recurso por utilizar string planos, ya que estos solo se crean si la prueba falla*/
-        assertNotNull(actual, () -> "La cuenta no puede ser nula");
-        assertEquals(esperado, actual, () -> "el nombre de la cuenta no es el que se esperaba: se esperaba " + esperado + " sin embargo fue " + actual);
-        assertTrue(actual.equals("Isaias"), () -> "nombre cuenta esperado debe ser igual al actual");
+    @Nested
+    @DisplayName("probando atributos de la cuenta corriente")
+    class CuentaNombreTest {
+        @Test
+        @DisplayName("el nombre de la cuenta")
+        void testNombreCuenta() {
+            String esperado = "Isaias";
+            String actual = cuenta.getPersona();
+            /*EL uso de lambda ayuda a no utilizar muchos recurso por utilizar string planos, ya que estos solo se crean si la prueba falla*/
+            assertNotNull(actual, () -> "La cuenta no puede ser nula");
+            assertEquals(esperado, actual, () -> "el nombre de la cuenta no es el que se esperaba: se esperaba " + esperado + " sin embargo fue " + actual);
+            assertTrue(actual.equals("Isaias"), () -> "nombre cuenta esperado debe ser igual al actual");
+        }
+
+        @Test
+        @DisplayName("el saldo, que no sea null, mayor que cero, valor esperado.")
+        void testSaldoCuenta() {
+            assertNotNull(cuenta.getSaldo());
+            assertEquals(1000.12345, cuenta.getSaldo().doubleValue());
+            /*  0 : if value of this BigDecimal is equal to that of BigDecimal object passed as parameter.
+             *  1 : if value of this BigDecimal is greater than that of BigDecimal object passed as parameter.
+             * -1 : if value of this BigDecimal is less than that of BigDecimal object passed as parameter.
+             * */
+            assertFalse(cuenta.getSaldo().compareTo(BigDecimal.ZERO) < 0);
+            assertTrue(cuenta.getSaldo().compareTo(BigDecimal.ZERO) > 0);
+        }
+
+        @Test
+        @DisplayName("referencias sean iguales con el metodo equals. \uD83D\uDE0E ")
+        void testReferenciaCuenta() {
+            Cuenta cuentaOne = new Cuenta("John Doe", new BigDecimal("8900.9997"));
+            Cuenta cuentaTwo = new Cuenta("John Doe", new BigDecimal("8900.9997"));
+
+            assertEquals(cuentaOne, cuentaTwo);
+        }
+
     }
 
-    @Test
-    @DisplayName("probando el saldo de la cuenta corriente, que no sea null, mayor que cero, valor esperado.")
-    void testSaldoCuenta() {
-        assertNotNull(cuenta.getSaldo());
-        assertEquals(1000.12345, cuenta.getSaldo().doubleValue());
-        /*  0 : if value of this BigDecimal is equal to that of BigDecimal object passed as parameter.
-         *  1 : if value of this BigDecimal is greater than that of BigDecimal object passed as parameter.
-         * -1 : if value of this BigDecimal is less than that of BigDecimal object passed as parameter.
-         * */
-        assertFalse(cuenta.getSaldo().compareTo(BigDecimal.ZERO) < 0);
-        assertTrue(cuenta.getSaldo().compareTo(BigDecimal.ZERO) > 0);
-    }
+    @Nested
+    class CuentaOperacionesTest {
+        @Test
+        void testDebitoCuenta() {
+            cuenta.debito(new BigDecimal(100));
+            assertNotNull(cuenta.getSaldo());
+            assertEquals(900, cuenta.getSaldo().intValue());
+            assertEquals("900.12345", cuenta.getSaldo().toPlainString());
+        }
 
-    @Test
-    @DisplayName("prueba referencias sean iguales con el metodo equals. \uD83D\uDE0E ")
-    void testReferenciaCuenta() {
-        Cuenta cuentaOne = new Cuenta("John Doe", new BigDecimal("8900.9997"));
-        Cuenta cuentaTwo = new Cuenta("John Doe", new BigDecimal("8900.9997"));
+        @Test
+        void testCreditoCuenta() {
+            cuenta.credito(new BigDecimal(100));
+            assertNotNull(cuenta.getSaldo());
+            assertEquals(1100, cuenta.getSaldo().intValue());
+            assertEquals("1100.12345", cuenta.getSaldo().toPlainString());
+        }
 
-        assertEquals(cuentaOne, cuentaTwo);
-    }
+        @Test
+        void testTransferirDineroCuenta() {
+            Cuenta cuentaOne = new Cuenta("John Doe", new BigDecimal("2500"));
+            Cuenta cuentaTwo = new Cuenta("John Doe", new BigDecimal("1500.8989"));
+            Banco banco = new Banco();
+            banco.setNombre("Banco del Estado");
+            banco.transferir(cuentaOne, cuentaTwo, new BigDecimal(500));
+            assertEquals("1000.8989", cuentaTwo.getSaldo().toPlainString());
+            assertEquals("3000", cuentaOne.getSaldo().toPlainString());
+        }
 
-    @Test
-    void testDebitoCuenta() {
-        cuenta.debito(new BigDecimal(100));
-        assertNotNull(cuenta.getSaldo());
-        assertEquals(900, cuenta.getSaldo().intValue());
-        assertEquals("900.12345", cuenta.getSaldo().toPlainString());
-    }
+        @Test
+        @Disabled //permite ignorar esta implementacion de prueba, y util para la documentacion.
+        @DisplayName("probando relaciones entre las cuentas y el banco con assertAll.")
+        void testRelacionBancoCuentas() {
+            // forzar el error
+            fail();
 
-    @Test
-    void testCreditoCuenta() {
-        cuenta.credito(new BigDecimal(100));
-        assertNotNull(cuenta.getSaldo());
-        assertEquals(1100, cuenta.getSaldo().intValue());
-        assertEquals("1100.12345", cuenta.getSaldo().toPlainString());
+            Cuenta cuentaOne = new Cuenta("John Doe", new BigDecimal("2500"));
+            Cuenta cuentaTwo = new Cuenta("Isaias", new BigDecimal("1500.8989"));
+
+            Banco banco = new Banco();
+            banco.addCuenta(cuentaOne);
+            banco.addCuenta(cuentaTwo);
+
+            banco.setNombre("Banco del Estado");
+            banco.transferir(cuentaOne, cuentaTwo, new BigDecimal(500));
+
+            assertAll(
+                    () -> assertEquals("1000.8989", cuentaTwo.getSaldo().toPlainString(), () -> "el valor del saldo de la cuenta 2 no es el esperado."),
+                    () -> assertEquals("3000", cuentaOne.getSaldo().toPlainString(), () -> "el valor del saldo de la cuenta 1 no es el esperado."),
+                    () -> assertEquals(2, banco.getCuentas().size(), () -> "el banco no tiene las cuentas esperadas."),
+                    () -> assertEquals("Banco del Estado", cuentaOne.getBanco().getNombre()),
+                    () -> assertEquals("Isaias", banco.getCuentas()
+                            .stream()
+                            .filter(cuenta -> cuenta.getPersona().equalsIgnoreCase("Isaias"))
+                            .findFirst()
+                            .get()
+                            .getPersona()),
+                    () -> assertTrue(banco.getCuentas()
+                            .stream()
+                            .filter(cuenta -> cuenta.getPersona().equals("Isaias"))
+                            .findFirst().isPresent()),
+
+                    () -> assertTrue(banco.getCuentas()
+                            .stream()
+                            .anyMatch(cuenta -> cuenta.getPersona().equals("Isaias")))
+            );
+
+        }
+
     }
 
     @Test
@@ -96,138 +156,100 @@ class CuentaTest {
         assertEquals(esperado, actual);
     }
 
-    @Test
-    void testTransferirDineroCuenta() {
-        Cuenta cuentaOne = new Cuenta("John Doe", new BigDecimal("2500"));
-        Cuenta cuentaTwo = new Cuenta("John Doe", new BigDecimal("1500.8989"));
-        Banco banco = new Banco();
-        banco.setNombre("Banco del Estado");
-        banco.transferir(cuentaOne, cuentaTwo, new BigDecimal(500));
-        assertEquals("1000.8989", cuentaTwo.getSaldo().toPlainString());
-        assertEquals("3000", cuentaOne.getSaldo().toPlainString());
+    @Nested
+    class SistemaOperativoTest {
+        @Test
+        @EnabledOnOs(OS.WINDOWS)
+        void testSoloWindows() {
+        }
+
+        @Test
+        @EnabledOnOs({OS.LINUX, OS.MAC})
+        void testSoloLinuxMac() {
+        }
+
+        @Test
+        @DisabledOnOs(OS.WINDOWS)
+        void testNoWindows() {
+        }
     }
 
-    @Test
-    @Disabled //permite ignorar esta implementacion de prueba, y util para la documentacion.
-    @DisplayName("probando relaciones entre las cuentas y el banco con assertAll.")
-    void testRelacionBancoCuentas() {
-        // forzar el error
-        fail();
+    @Nested
+    class JavaVersionTest {
+        @Test
+        @EnabledOnJre(JRE.JAVA_8)
+        void soloJDK8() {
+        }
 
-        Cuenta cuentaOne = new Cuenta("John Doe", new BigDecimal("2500"));
-        Cuenta cuentaTwo = new Cuenta("Isaias", new BigDecimal("1500.8989"));
+        @Test
+        @EnabledOnJre(JRE.JAVA_11)
+        void soloJDK11() {
+        }
 
-        Banco banco = new Banco();
-        banco.addCuenta(cuentaOne);
-        banco.addCuenta(cuentaTwo);
-
-        banco.setNombre("Banco del Estado");
-        banco.transferir(cuentaOne, cuentaTwo, new BigDecimal(500));
-
-        assertAll(
-                () -> assertEquals("1000.8989", cuentaTwo.getSaldo().toPlainString(), () -> "el valor del saldo de la cuenta 2 no es el esperado."),
-                () -> assertEquals("3000", cuentaOne.getSaldo().toPlainString(), () -> "el valor del saldo de la cuenta 1 no es el esperado."),
-                () -> assertEquals(2, banco.getCuentas().size(), () -> "el banco no tiene las cuentas esperadas."),
-                () -> assertEquals("Banco del Estado", cuentaOne.getBanco().getNombre()),
-                () -> assertEquals("Isaias", banco.getCuentas()
-                        .stream()
-                        .filter(cuenta -> cuenta.getPersona().equalsIgnoreCase("Isaias"))
-                        .findFirst()
-                        .get()
-                        .getPersona()),
-                () -> assertTrue(banco.getCuentas()
-                        .stream()
-                        .filter(cuenta -> cuenta.getPersona().equals("Isaias"))
-                        .findFirst().isPresent()),
-
-                () -> assertTrue(banco.getCuentas()
-                        .stream()
-                        .anyMatch(cuenta -> cuenta.getPersona().equals("Isaias")))
-        );
-
+        @Test
+        @DisabledOnJre(JRE.JAVA_11)
+        void testNoJDK11() {
+        }
     }
 
-    @Test
-    @EnabledOnOs(OS.WINDOWS)
-    void testSoloWindows() {
+    @Nested
+    class SystemPropertiesTest {
+        @Test
+        void showSystemroperties() {
+            Properties properties = System.getProperties();
+            properties.forEach((k, v) -> System.out.println(k + ":" + v));
+        }
+
+        @Test
+        @EnabledIfSystemProperty(named = "java.version", matches = ".*11.*")
+        void testJavaVersion() {
+        }
+
+        @Test
+        @DisabledIfSystemProperty(named = "os.arch", matches = ".*32.*")
+        void testSolo64Bits() {
+        }
+
+        @Test
+        @EnabledIfSystemProperty(named = "user.name", matches = "imorochi")
+        void testUsername() {
+        }
+
+        @Test
+        @EnabledIfSystemProperty(named = "ENV", matches = "dev")
+        void testDev() {
+        }
     }
 
-    @Test
-    @EnabledOnOs({OS.LINUX, OS.MAC})
-    void testSoloLinuxMac() {
+    @Nested
+    class VariableAmbienteTest {
+        @Test
+        void showVariablesEnviroments() {
+            Map<String, String> getenv = System.getenv();
+            getenv.forEach((k, v) -> System.out.println(String.format("%s = %s", k, v)));
+        }
+
+        @Test
+        @EnabledIfEnvironmentVariable(named = "JAVA_HOME", matches = ".*jdk-11.0.*")
+        void testJavaHome() {
+        }
+
+        @Test
+        @EnabledIfEnvironmentVariable(named = "NUMBER_OF_PROCESSORS", matches = "4")
+        void testProcesadores() {
+        }
+
+        @Test
+        @EnabledIfEnvironmentVariable(named = "ENVIRONMENT", matches = "dev")
+        void testEnv() {
+        }
+
+        @Test
+        @DisabledIfEnvironmentVariable(named = "ENVIRONMENT", matches = "prod")
+        void testEnvProdDisabled() {
+        }
     }
 
-    @Test
-    @DisabledOnOs(OS.WINDOWS)
-    void testNoWindows() {
-    }
-
-    @Test
-    @EnabledOnJre(JRE.JAVA_8)
-    void soloJDK8() {
-    }
-
-    @Test
-    @EnabledOnJre(JRE.JAVA_15)
-    void soloJDK15() {
-    }
-
-    @Test
-    @DisabledOnJre(JRE.JAVA_15)
-    void testNoJDK15() {
-    }
-
-    @Test
-    void showSystemroperties() {
-        Properties properties = System.getProperties();
-        properties.forEach((k, v) -> System.out.println(k + ":" + v));
-    }
-
-    @Test
-    @EnabledIfSystemProperty(named = "java.version", matches = ".*11.*")
-    void testJavaVersion() {
-    }
-
-    @Test
-    @DisabledIfSystemProperty(named = "os.arch", matches = ".*32.*")
-    void testSolo64Bits() {
-    }
-
-    @Test
-    @EnabledIfSystemProperty(named = "user.name", matches = "imorochi")
-    void testUsername() {
-    }
-
-    @Test
-    @EnabledIfSystemProperty(named = "ENV", matches = "dev")
-    void testDev() {
-    }
-
-    @Test
-    void showVariablesEnviroments() {
-        Map<String, String> getenv = System.getenv();
-        getenv.forEach((k, v) -> System.out.println(String.format("%s = %s", k, v)));
-    }
-
-    @Test
-    @EnabledIfEnvironmentVariable(named = "JAVA_HOME", matches = ".*jdk-11.0.*")
-    void testJavaHome() {
-    }
-
-    @Test
-    @EnabledIfEnvironmentVariable(named = "NUMBER_OF_PROCESSORS", matches = "4")
-    void testProcesadores() {
-    }
-
-    @Test
-    @EnabledIfEnvironmentVariable(named = "ENVIRONMENT", matches = "dev")
-    void testEnv() {
-    }
-
-    @Test
-    @DisabledIfEnvironmentVariable(named = "ENVIRONMENT", matches = "prod")
-    void testEnvProdDisabled() {
-    }
 
     @Test
     @DisplayName("Test Saldo cuenta dev.")
