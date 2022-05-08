@@ -3,6 +3,8 @@ package models;
 import exceptions.DineroInsuficiente;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -286,6 +288,15 @@ class CuentaTest {
             assertEquals(1000.12345, cuenta.getSaldo().doubleValue());
         });
         assertFalse(cuenta.getSaldo().compareTo(BigDecimal.ZERO) < 0);
+        assertTrue(cuenta.getSaldo().compareTo(BigDecimal.ZERO) > 0);
+    }
+
+    @ParameterizedTest(name = "numero {index} ejecutando con valor {0} - {argumentsWithNames}")
+    @ValueSource(strings = {"100", "200", "300", "500", "700", "1000.12345"})
+    //@ValueSource(doubles = {100, 200, 300, 500, 700, 1000.12345}) //corremos riesgo de la perdida de precision
+    void testDebitoCuenta(String monto) {
+        cuenta.debito(new BigDecimal(monto));
+        assertNotNull(cuenta.getSaldo());
         assertTrue(cuenta.getSaldo().compareTo(BigDecimal.ZERO) > 0);
     }
 
