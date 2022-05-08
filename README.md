@@ -1,11 +1,11 @@
 # Teoria TDD. Que es TDD?
-## TEST DRIVEN DEVELPMENT
+## TEST DRIVEN DEVELOPMENT
 
 * Metodología de programación agnostico al lenguaje de programación.
 * Programación diseñada por test.
 
 ### Ciclo de vida de TDD
-![alt text](https://drupal.ed.team/sites/default/files/2018-12/Ciclo%20de%20vida%20chiqui_4.png "Logo Title Text 1")
+![alt text](https://drupal.ed.team/sites/default/files/2018-12/Ciclo%20de%20vida%20chiqui_4.png" Logo Title Text 1")
 
 ### Ventajas
 * Código testeado se serie.
