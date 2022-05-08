@@ -2,6 +2,8 @@ package models;
 
 import exceptions.DineroInsuficiente;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -11,16 +13,19 @@ import static org.junit.jupiter.api.Assertions.*;
 class CuentaTest {
 
     @Test
+    @DisplayName("probando el nombre de la cuenta")
     void testNombreCuenta() {
         Cuenta cuenta = new Cuenta("Isaias", new BigDecimal("1000.1234"));
         String esperado = "Isaias";
         String actual = cuenta.getPersona();
-        assertNotNull(actual);
-        assertEquals(esperado, actual);
-        assertTrue(actual.equals("Isaias"));
+        /*EL uso de lambda ayuda a no utilizar muchos recurso por utilizar string planos, ya que estos solo se crean si la prueba falla*/
+        assertNotNull(actual, () -> "La cuenta no puede ser nula");
+        assertEquals(esperado, actual, () -> "el nombre de la cuenta no es el que se esperaba: se esperaba " + esperado + " sin embargo fue " + actual);
+        assertTrue(actual.equals("Isaias"), () -> "nombre cuenta esperado debe ser igual al actual");
     }
 
     @Test
+    @DisplayName("probando el saldo de la cuenta corriente, que no sea null, mayor que cero, valor esperado.")
     void testSaldoCuenta() {
         Cuenta cuenta = new Cuenta("Isaias", new BigDecimal("1000.12345"));
         assertNotNull(cuenta.getSaldo());
@@ -34,6 +39,7 @@ class CuentaTest {
     }
 
     @Test
+    @DisplayName("prueba referencias sean iguales con el metodo equals. \uD83D\uDE0E ")
     void testReferenciaCuenta() {
         Cuenta cuentaOne = new Cuenta("John Doe", new BigDecimal("8900.9997"));
         Cuenta cuentaTwo = new Cuenta("John Doe", new BigDecimal("8900.9997"));
@@ -82,7 +88,12 @@ class CuentaTest {
     }
 
     @Test
+    @Disabled //permite ignorar esta implementacion de prueba, y util para la documentacion.
+    @DisplayName("probando relaciones entre las cuentas y el banco con assertAll.")
     void testRelacionBancoCuentas() {
+        // forzar el error
+        fail();
+
         Cuenta cuentaOne = new Cuenta("John Doe", new BigDecimal("2500"));
         Cuenta cuentaTwo = new Cuenta("Isaias", new BigDecimal("1500.8989"));
 
@@ -94,9 +105,9 @@ class CuentaTest {
         banco.transferir(cuentaOne, cuentaTwo, new BigDecimal(500));
 
         assertAll(
-                () -> assertEquals("1000.8989", cuentaTwo.getSaldo().toPlainString()),
-                () -> assertEquals("3000", cuentaOne.getSaldo().toPlainString()),
-                () -> assertEquals(2, banco.getCuentas().size()),
+                () -> assertEquals("1000.8989", cuentaTwo.getSaldo().toPlainString(), () -> "el valor del saldo de la cuenta 2 no es el esperado."),
+                () -> assertEquals("3000", cuentaOne.getSaldo().toPlainString(), () -> "el valor del saldo de la cuenta 1 no es el esperado."),
+                () -> assertEquals(2, banco.getCuentas().size(), () -> "el banco no tiene las cuentas esperadas."),
                 () -> assertEquals("Banco del Estado", cuentaOne.getBanco().getNombre()),
                 () -> assertEquals("Isaias", banco.getCuentas()
                         .stream()
