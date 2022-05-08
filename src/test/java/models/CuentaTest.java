@@ -20,6 +20,8 @@ import static org.junit.jupiter.api.Assumptions.assumingThat;
 class CuentaTest {
 
     Cuenta cuenta;
+    private TestInfo testInfo;
+    private TestReporter testReporter;
 
     @BeforeAll
     static void beforeAll() {
@@ -32,9 +34,12 @@ class CuentaTest {
     }
 
     @BeforeEach
-    void beforeEach() {
+    void beforeEach(TestInfo testInfo, TestReporter testReporter) {
         System.out.println("Iniciando el metodo de prueba.");
+        this.testInfo = testInfo;
+        this.testReporter = testReporter;
         this.cuenta = new Cuenta("Isaias", new BigDecimal("1000.12345"));
+        this.testReporter.publishEntry("Ejecutando: " + testInfo.getDisplayName() + " " + testInfo.getTestMethod().orElse(null).getName() + " con las etiquetas " + testInfo.getTags());
     }
 
     @AfterEach
@@ -77,12 +82,17 @@ class CuentaTest {
         assertTrue(cuenta.getSaldo().compareTo(BigDecimal.ZERO) > 0);
     }
 
+    @Tag("cuenta")
     @Nested
     @DisplayName("probando atributos de la cuenta corriente")
     class CuentaNombreTest {
         @Test
         @DisplayName("el nombre de la cuenta")
         void testNombreCuenta() {
+            System.out.println(testInfo.getTags());
+            if (testInfo.getTags().contains("cuenta")) {
+                System.out.println("hacer algo con la etiqueta cuenta.");
+            }
             String esperado = "Isaias";
             String actual = cuenta.getPersona();
             /*EL uso de lambda ayuda a no utilizar muchos recurso por utilizar string planos, ya que estos solo se crean si la prueba falla*/
