@@ -6,22 +6,30 @@ import org.junit.jupiter.api.condition.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumingThat;
 
 //@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CuentaTest {
 
     Cuenta cuenta;
+
+    @BeforeAll
+    static void beforeAll() {
+        System.out.println("Inicializando el test.");
+    }
+
+    @AfterAll
+    static void afterAll() {
+        System.out.println("Finalizando el test.");
+    }
 
     @BeforeEach
     void beforeEach() {
@@ -34,14 +42,39 @@ class CuentaTest {
         System.out.println("Finalizando el metodo de prueba.");
     }
 
-    @BeforeAll
-    static void beforeAll() {
-        System.out.println("Inicializando el test.");
+    @Tag("cuenta")
+    @Tag("error")
+    @Test
+    void testDineroInsuficienteExceptionCuenta() {
+        Exception exception = assertThrows(DineroInsuficiente.class, () -> {
+            cuenta.debito(new BigDecimal(1500));
+        });
+        String actual = exception.getMessage();
+        String esperado = "Dinero Insuficiente";
+        assertEquals(esperado, actual);
     }
 
-    @AfterAll
-    static void afterAll() {
-        System.out.println("Finalizando el test.");
+    @Test
+    @DisplayName("Test Saldo cuenta dev.")
+    void testSaldoCuentaDev() {
+        boolean isDev = "dev".equals(System.getProperty("ENV"));
+        assumeTrue(isDev); //Assumptions permite determinar si se ejecuta o no el test de prueba.
+        assertNotNull(cuenta.getSaldo());
+        assertEquals(1000.12345, cuenta.getSaldo().doubleValue());
+        assertFalse(cuenta.getSaldo().compareTo(BigDecimal.ZERO) < 0);
+        assertTrue(cuenta.getSaldo().compareTo(BigDecimal.ZERO) > 0);
+    }
+
+    @Test
+    @DisplayName("Test Saldo cuenta dev 2.")
+    void testSaldoCuentaDev2() {
+        boolean isDev = "dev".equals(System.getProperty("ENV"));
+        assumingThat(isDev, () -> { //permite que se ejecute el metodo test, pero solo si se cumple la condicion ingresa a ejecutar el lambda
+            assertNotNull(cuenta.getSaldo());
+            assertEquals(1000.12345, cuenta.getSaldo().doubleValue());
+        });
+        assertFalse(cuenta.getSaldo().compareTo(BigDecimal.ZERO) < 0);
+        assertTrue(cuenta.getSaldo().compareTo(BigDecimal.ZERO) > 0);
     }
 
     @Nested
@@ -84,6 +117,7 @@ class CuentaTest {
 
     @Nested
     class CuentaOperacionesTest {
+        @Tag("cuenta")
         @Test
         void testDebitoCuenta() {
             cuenta.debito(new BigDecimal(100));
@@ -92,6 +126,7 @@ class CuentaTest {
             assertEquals("900.12345", cuenta.getSaldo().toPlainString());
         }
 
+        @Tag("cuenta")
         @Test
         void testCreditoCuenta() {
             cuenta.credito(new BigDecimal(100));
@@ -100,6 +135,8 @@ class CuentaTest {
             assertEquals("1100.12345", cuenta.getSaldo().toPlainString());
         }
 
+        @Tag("cuenta")
+        @Tag("banco")
         @Test
         void testTransferirDineroCuenta() {
             Cuenta cuentaOne = new Cuenta("John Doe", new BigDecimal("2500"));
@@ -111,12 +148,14 @@ class CuentaTest {
             assertEquals("3000", cuentaOne.getSaldo().toPlainString());
         }
 
+        @Tag("cuenta")
+        @Tag("banco")
         @Test
-        @Disabled //permite ignorar esta implementacion de prueba, y util para la documentacion.
+        //@Disabled //permite ignorar esta implementacion de prueba, y util para la documentacion.
         @DisplayName("probando relaciones entre las cuentas y el banco con assertAll.")
         void testRelacionBancoCuentas() {
             // forzar el error
-            fail();
+            //fail();
 
             Cuenta cuentaOne = new Cuenta("John Doe", new BigDecimal("2500"));
             Cuenta cuentaTwo = new Cuenta("Isaias", new BigDecimal("1500.8989"));
@@ -166,16 +205,6 @@ class CuentaTest {
             assertEquals("900.12345", cuenta.getSaldo().toPlainString());
         }
 
-    }
-
-    @Test
-    void testDineroInsuficienteExceptionCuenta() {
-        Exception exception = assertThrows(DineroInsuficiente.class, () -> {
-            cuenta.debito(new BigDecimal(1500));
-        });
-        String actual = exception.getMessage();
-        String esperado = "Dinero Insuficiente";
-        assertEquals(esperado, actual);
     }
 
     @Nested
@@ -272,35 +301,13 @@ class CuentaTest {
         }
     }
 
-
-    @Test
-    @DisplayName("Test Saldo cuenta dev.")
-    void testSaldoCuentaDev() {
-        boolean isDev = "dev".equals(System.getProperty("ENV"));
-        assumeTrue(isDev); //Assumptions permite determinar si se ejecuta o no el test de prueba.
-        assertNotNull(cuenta.getSaldo());
-        assertEquals(1000.12345, cuenta.getSaldo().doubleValue());
-        assertFalse(cuenta.getSaldo().compareTo(BigDecimal.ZERO) < 0);
-        assertTrue(cuenta.getSaldo().compareTo(BigDecimal.ZERO) > 0);
-    }
-
-    @Test
-    @DisplayName("Test Saldo cuenta dev 2.")
-    void testSaldoCuentaDev2() {
-        boolean isDev = "dev".equals(System.getProperty("ENV"));
-        assumingThat(isDev, () -> { //permite que se ejecute el metodo test, pero solo si se cumple la condicion ingresa a ejecutar el lambda
-            assertNotNull(cuenta.getSaldo());
-            assertEquals(1000.12345, cuenta.getSaldo().doubleValue());
-        });
-        assertFalse(cuenta.getSaldo().compareTo(BigDecimal.ZERO) < 0);
-        assertTrue(cuenta.getSaldo().compareTo(BigDecimal.ZERO) > 0);
-    }
-
+    @Tag("params")
     @Nested
     class PruebasParametrizadasTest {
+
+        //@ValueSource(doubles = {100, 200, 300, 500, 700, 1000.12345}) //corremos riesgo de la perdida de precision
         @ParameterizedTest(name = "numero {index} ejecutando con valor {0} - {argumentsWithNames}")
         @ValueSource(strings = {"100", "200", "300", "500", "700", "1000.12345"})
-            //@ValueSource(doubles = {100, 200, 300, 500, 700, 1000.12345}) //corremos riesgo de la perdida de precision
         void testDebitoCuentaValueSource(String monto) {
             cuenta.debito(new BigDecimal(monto));
             assertNotNull(cuenta.getSaldo());
@@ -317,7 +324,7 @@ class CuentaTest {
         }
 
         @ParameterizedTest(name = "numero {index} ejecutando con valor {0} - {argumentsWithNames}")
-        @CsvSource({"200,100,John,Isaias", "250,200,John,John", "300,300,Mario,Mario", "510,500,John,Isaias", "750,700,John,John", "1000.12345,1000.12345,John,John"})
+        @CsvSource({"200,100,Isaias,Isaias", "250,200,John,John", "300,300,Mario,Mario", "510,500,Isaias,Isaias", "750,700,John,John", "1000.12345,1000.12345,John,John"})
         void testDebitoCuentaCsvSource2(String saldo, String monto, String esperado, String actual) {
             System.out.println(String.format("%s -> %s", saldo, monto));
             cuenta.setSaldo(new BigDecimal(saldo));
@@ -350,17 +357,19 @@ class CuentaTest {
             assertTrue(cuenta.getSaldo().compareTo(BigDecimal.ZERO) > 0);
         }
 
+       /* private static List<String> montoList() {
+            return Arrays.asList("100", "200", "300", "500", "700", "1000.12345");
+        }
+
         @ParameterizedTest(name = "numero {index} ejecutando con valor {0} - {argumentsWithNames}")
         @MethodSource("montoList")
         void testDebitoCuentaMethodSource(String monto) {
             cuenta.debito(new BigDecimal(monto));
             assertNotNull(cuenta.getSaldo());
             assertTrue(cuenta.getSaldo().compareTo(BigDecimal.ZERO) > 0);
-        }
+        }*/
 
-        private static List<String> montoList() {
-            return Arrays.asList("100", "200", "300", "500", "700", "1000.12345");
-        }
     }
+
 
 }
