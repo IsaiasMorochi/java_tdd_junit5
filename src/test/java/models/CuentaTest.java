@@ -15,8 +15,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.junit.jupiter.api.Assumptions.assumingThat;
+import static org.junit.jupiter.api.Assumptions.*;
 
 //@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CuentaTest {
