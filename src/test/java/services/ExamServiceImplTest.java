@@ -6,6 +6,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 // import org.mockito.Mockito;
 import static org.mockito.Mockito.*;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import respositories.ExamRepository;
 import respositories.ExamRepositoryImpl;
 import respositories.QuestionRepository;
@@ -18,16 +24,23 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(MockitoExtension.class)
 class ExamServiceImplTest {
+    @Mock
     ExamRepository examRepository;
+
+    @Mock
     QuestionRepository questionRepository;
-    ExamService service;
+
+    @InjectMocks //solo injecta implementaciones(class)
+    ExamServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        examRepository = mock(ExamRepository.class);
+        //MockitoAnnotations.openMocks(this);
+        /*examRepository = mock(ExamRepository.class);
         questionRepository = mock(QuestionRepository.class);
-        service = new ExamServiceImpl(examRepository, questionRepository);
+        service = new ExamServiceImpl(examRepository, questionRepository);*/
     }
 
     @Test
