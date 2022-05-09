@@ -73,4 +73,30 @@ class ExamServiceImplTest {
         assertEquals(5, exam.orElseThrow().getQuestions().size());
         assertTrue(exam.get().getQuestions().contains("aritmetica"));
     }
+
+    @Test
+    void testQuestionsExamVerify() {
+        when(examRepository.findAll()).thenReturn(DATA.EXAMS);
+        when(questionRepository.findQuestionByExamId(anyLong())).thenReturn(DATA.QUESTIONS);
+
+        Optional<Exam> exam = service.findExamByNameWithQuestions("Matemáticas");
+        assertTrue(exam.isPresent());
+        assertEquals(5, exam.orElseThrow().getQuestions().size());
+        assertTrue(exam.get().getQuestions().contains("aritmetica"));
+
+        // verificamos que si se llama a los metodos del repository
+        verify(examRepository).findAll();
+        verify(questionRepository).findQuestionByExamId(1L);
+    }
+
+    @Test
+    void testNotExistExamVerify() {
+        when(examRepository.findAll()).thenReturn(Collections.emptyList());
+        when(questionRepository.findQuestionByExamId(anyLong())).thenReturn(DATA.QUESTIONS);
+        Optional<Exam> exam = service.findExamByNameWithQuestions("Matemáticas");
+        assertNull(exam);
+
+        verify(examRepository).findAll();
+        verify(questionRepository).findQuestionByExamId(1L);
+    }
 }
