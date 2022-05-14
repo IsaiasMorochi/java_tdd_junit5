@@ -34,6 +34,11 @@ class ExamServiceImplTest {
     @InjectMocks //solo injecta implementaciones(class)
     ExamServiceImpl service;
 
+
+   /* Uso captor con DI
+    @Captor
+    ArgumentCaptor<Long> captor;*/
+
     @BeforeEach
     void setUp() {
         //MockitoAnnotations.openMocks(this);
@@ -212,5 +217,17 @@ class ExamServiceImplTest {
         verify(questionRepository).findQuestionByExamId(captor.capture());
 
         assertEquals(1L, captor.getValue());
+    }
+
+    @Test
+    void tesDoThrow() {
+        Exam exam = DATA.EXAM;
+        exam.setQuestions(DATA.QUESTIONS);
+
+        // Util doThrow para mock metodos void
+        doThrow(IllegalArgumentException.class).when(questionRepository).saveAll(anyList());
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.save(exam);
+        });
     }
 }
