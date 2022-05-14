@@ -26,12 +26,23 @@ public class ExamServiceImpl implements ExamService {
     }
 
     @Override
-    public Optional<Exam> findExamByNameWithQuestions(String nameExam) {
+    public Exam findExamByNameWithQuestions(String nameExam) {
         Optional<Exam> examOptional = findByExamByName(nameExam);
+        Exam exam = null;
         if (examOptional.isPresent()) {
+            exam = examOptional.orElseThrow();
             List<String> questions = questionRepository.findQuestionByExamId(examOptional.get().getId());
-            examOptional.get().setQuestions(questions);
+            exam.setQuestions(questions);
         }
-        return examOptional;
+        return exam;
     }
+
+    @Override
+    public Exam save(Exam exam) {
+        if (!exam.getQuestions().isEmpty()) {
+            questionRepository.saveAll(exam.getQuestions());
+        }
+        return examRepository.save(exam);
+    }
+
 }

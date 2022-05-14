@@ -8,4 +8,9 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     public List<String> findQuestionByExamId(Long examId) {
         return Collections.emptyList();
     }
+
+    @Override
+    public void saveAll(List<String> questions) {
+
+    }
 }

@@ -6,5 +6,6 @@ import java.util.Optional;
 
 public interface ExamService {
    Optional<Exam> findByExamByName(String name);
-   Optional<Exam> findExamByNameWithQuestions(String nameExam);
+   Exam findExamByNameWithQuestions(String nameExam);
+   Exam save(Exam exam);
 }
