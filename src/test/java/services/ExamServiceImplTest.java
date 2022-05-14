@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatcher;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -165,7 +166,7 @@ class ExamServiceImplTest {
     }
 
     @Test
-    void testArgumentMatchers() {
+    void testArgumentMatchersOne() {
         when(examRepository.findAll()).thenReturn(DATA.EXAMS);
         when(questionRepository.findQuestionByExamId(anyLong())).thenReturn(DATA.QUESTIONS);
         service.findExamByNameWithQuestions("Matemáticas");
@@ -174,6 +175,35 @@ class ExamServiceImplTest {
         verify(questionRepository).findQuestionByExamId(ArgumentMatchers.argThat(arg -> arg != null && arg.equals(1L)));
         verify(questionRepository).findQuestionByExamId(ArgumentMatchers.argThat(arg -> arg != null && arg >= 1L));
         verify(questionRepository).findQuestionByExamId(eq(1L));
+    }
+
+    @Test
+    void testArgumentMatchersTwo() {
+        when(examRepository.findAll()).thenReturn(DATA.EXAMS_ID_NEGATIVO);
+        when(questionRepository.findQuestionByExamId(anyLong())).thenReturn(DATA.QUESTIONS);
+        service.findExamByNameWithQuestions("Matemáticas2");
+
+        // Util para usar Matchers con mensaje personalizado
+        verify(examRepository).findAll();
+        verify(questionRepository).findQuestionByExamId(argThat(new MiArgsMatchers()));
+    }
+
+    public static class MiArgsMatchers implements ArgumentMatcher<Long> {
+
+        private Long argument;
+
+        @Override
+        public boolean matches(Long argument) {
+            this.argument = argument;
+            return argument != null && argument > 0;
+        }
+
+        @Override
+        public String toString() {
+            return "es para un mensaje personalizado de error que imprime mockito en caso de que falle el test <" +
+                    argument + "> deber un entero positivo";
+        }
+
     }
 
 }

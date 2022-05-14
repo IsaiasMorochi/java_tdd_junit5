@@ -16,6 +16,11 @@ public class DATA {
             new Exam(null, "Lenguaje"),
             new Exam(null, "Fisica"));
 
+    public final static List<Exam> EXAMS_ID_NEGATIVO = Arrays.asList(
+            new Exam(-1L, "Matemáticas"),
+            new Exam(-2L, "Lenguaje"),
+            new Exam(-3L, "Fisica"));
+
 
     public final static List<String> QUESTIONS = Arrays.asList(
             "aritmetica", "integrales", "derivadas", "trigonometria", "geometria");
