@@ -230,4 +230,48 @@ class ExamServiceImplTest {
             service.save(exam);
         });
     }
+
+    @Test
+    void testDoAnswer() {
+       when(examRepository.findAll()).thenReturn(DATA.EXAMS);
+       doAnswer(invocationOnMock -> {
+           Long id = invocationOnMock.getArgument(0);
+           return id == 1L ? DATA.QUESTIONS : Collections.emptyList();
+       }).when(questionRepository).findQuestionByExamId(anyLong());
+
+       Exam exam = service.findExamByNameWithQuestions("Matemáticas");
+       assertEquals(5, exam.getQuestions().size());
+       assertEquals(1L, exam.getId());
+       assertEquals("Matemáticas", exam.getName());
+    }
+
+    @Test
+    void testdoAnswerSaveExam() {
+        // Given
+        Exam newExam = DATA.EXAM;
+        newExam.setQuestions(DATA.QUESTIONS);
+
+        doAnswer(new Answer<Exam>() {
+            // cuando se ejecuta el metodo save() le asignamos un id simulado
+            Long secuencia = 1L;
+            @Override
+            public Exam answer(InvocationOnMock invocationOnMock) throws Throwable {
+                Exam exam = invocationOnMock.getArgument(0);
+                exam.setId(secuencia++);
+                return exam;
+            }
+        }).when(examRepository).save(any(Exam.class));
+
+        // When
+        Exam exam = service.save(newExam);
+
+        // Then
+        assertNotNull(exam.getId());
+        assertEquals(1L, exam.getId());
+        assertEquals("Fisica", exam.getName());
+
+        verify(examRepository).save(any(Exam.class));
+        verify(questionRepository).saveAll(anyList());
+    }
+
 }
