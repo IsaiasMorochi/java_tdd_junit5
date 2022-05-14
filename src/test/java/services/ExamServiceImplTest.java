@@ -2,31 +2,31 @@ package services;
 
 import mock.DATA;
 import models.Exam;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-// import org.mockito.Mockito;
-import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
+
 import respositories.ExamRepository;
 import respositories.ExamRepositoryImpl;
 import respositories.QuestionRepository;
 import respositories.QuestionRepositoryImpl;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
+import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class ExamServiceImplTest {
+
     @Mock
     ExamRepository examRepository;
 
@@ -104,27 +104,43 @@ class ExamServiceImplTest {
     }
 
     @Test
-    @Disabled
     void testNotExistExamVerify() {
+        // Given
         when(examRepository.findAll()).thenReturn(Collections.emptyList());
         when(questionRepository.findQuestionByExamId(anyLong())).thenReturn(DATA.QUESTIONS);
-        Exam exam = service.findExamByNameWithQuestions("Matemáticas");
-        assertNull(exam);
 
+        // When
+        Exam exam = service.findExamByNameWithQuestions("Matemáticas");
+
+        // Then
+        assertNull(exam);
         verify(examRepository).findAll();
         verify(questionRepository).findQuestionByExamId(1L);
     }
 
     @Test
     void testSaveExam() {
+        // Given
         Exam newExam = DATA.EXAM;
         newExam.setQuestions(DATA.QUESTIONS);
 
-        when(examRepository.save(any(Exam.class))).thenReturn(DATA.EXAM);
+        when(examRepository.save(any(Exam.class))).then(new Answer<Exam>() {
+            // cuando se ejecuta el metodo save() le asignamos un id simulado
+            Long secuencia = 1L;
+            @Override
+            public Exam answer(InvocationOnMock invocationOnMock) throws Throwable {
+                Exam exam = invocationOnMock.getArgument(0);
+                exam.setId(secuencia++);
+                return exam;
+            }
+        });
+
+        // When
         Exam exam = service.save(newExam);
 
+        // Then
         assertNotNull(exam.getId());
-        assertEquals(8L, exam.getId());
+        assertEquals(1L, exam.getId());
         assertEquals("Fisica", exam.getName());
 
         verify(examRepository).save(any(Exam.class));
