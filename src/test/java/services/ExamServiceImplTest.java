@@ -4,7 +4,6 @@ import mock.DATA;
 import models.Exam;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -145,6 +144,23 @@ class ExamServiceImplTest {
 
         verify(examRepository).save(any(Exam.class));
         verify(questionRepository).saveAll(anyList());
+    }
+
+    @Test
+    void testUseException() {
+        when(examRepository.findAll()).thenReturn(DATA.EXAMS);
+        when(questionRepository.findQuestionByExamId(anyLong())).thenThrow(IllegalArgumentException.class);
+
+/*        assertThrows(IllegalArgumentException.class, () -> {
+            service.findExamByNameWithQuestions("Matematicas");
+        });*/
+        IllegalArgumentException argumentException = assertThrows(IllegalArgumentException.class, () -> {
+            service.findExamByNameWithQuestions("Matematicas");
+        });
+
+        assertEquals(IllegalArgumentException.class, argumentException.getClass());
+        verify(examRepository).findAll();
+        verify(questionRepository).findQuestionByExamId(anyLong());
     }
 
 }
