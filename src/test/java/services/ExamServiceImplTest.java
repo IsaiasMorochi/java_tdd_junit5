@@ -7,10 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatcher;
-import org.mockito.ArgumentMatchers;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
@@ -181,7 +178,7 @@ class ExamServiceImplTest {
     void testArgumentMatchersTwo() {
         when(examRepository.findAll()).thenReturn(DATA.EXAMS_ID_NEGATIVO);
         when(questionRepository.findQuestionByExamId(anyLong())).thenReturn(DATA.QUESTIONS);
-        service.findExamByNameWithQuestions("Matemáticas2");
+        service.findExamByNameWithQuestions("Matemáticas");
 
         // Util para usar Matchers con mensaje personalizado
         verify(examRepository).findAll();
@@ -206,4 +203,14 @@ class ExamServiceImplTest {
 
     }
 
+    @Test
+    void testArgumentCaptor() {
+        when(examRepository.findAll()).thenReturn(DATA.EXAMS);
+        service.findExamByNameWithQuestions("Matemáticas");
+
+        ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
+        verify(questionRepository).findQuestionByExamId(captor.capture());
+
+        assertEquals(1L, captor.getValue());
+    }
 }
