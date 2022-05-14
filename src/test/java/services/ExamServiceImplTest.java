@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -161,6 +162,18 @@ class ExamServiceImplTest {
         assertEquals(IllegalArgumentException.class, argumentException.getClass());
         verify(examRepository).findAll();
         verify(questionRepository).findQuestionByExamId(isNull());
+    }
+
+    @Test
+    void testArgumentMatchers() {
+        when(examRepository.findAll()).thenReturn(DATA.EXAMS);
+        when(questionRepository.findQuestionByExamId(anyLong())).thenReturn(DATA.QUESTIONS);
+        service.findExamByNameWithQuestions("Matemáticas");
+
+        verify(examRepository).findAll();
+        verify(questionRepository).findQuestionByExamId(ArgumentMatchers.argThat(arg -> arg != null && arg.equals(1L)));
+        verify(questionRepository).findQuestionByExamId(ArgumentMatchers.argThat(arg -> arg != null && arg >= 1L));
+        verify(questionRepository).findQuestionByExamId(eq(1L));
     }
 
 }
