@@ -148,19 +148,19 @@ class ExamServiceImplTest {
 
     @Test
     void testUseException() {
-        when(examRepository.findAll()).thenReturn(DATA.EXAMS);
-        when(questionRepository.findQuestionByExamId(anyLong())).thenThrow(IllegalArgumentException.class);
+        when(examRepository.findAll()).thenReturn(DATA.EXAMS_ID_NULL);
+        when(questionRepository.findQuestionByExamId(isNull())).thenThrow(IllegalArgumentException.class);
 
 /*        assertThrows(IllegalArgumentException.class, () -> {
             service.findExamByNameWithQuestions("Matematicas");
         });*/
         IllegalArgumentException argumentException = assertThrows(IllegalArgumentException.class, () -> {
-            service.findExamByNameWithQuestions("Matematicas");
+            service.findExamByNameWithQuestions("Matemáticas");
         });
 
         assertEquals(IllegalArgumentException.class, argumentException.getClass());
         verify(examRepository).findAll();
-        verify(questionRepository).findQuestionByExamId(anyLong());
+        verify(questionRepository).findQuestionByExamId(isNull());
     }
 
 }
