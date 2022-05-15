@@ -1,8 +1,8 @@
-package services;
+package imorochi.services;
 
-import models.Exam;
-import respositories.ExamRepository;
-import respositories.QuestionRepository;
+import imorochi.models.Exam;
+import imorochi.respositories.ExamRepository;
+import imorochi.respositories.QuestionRepository;
 
 import java.util.List;
 import java.util.Optional;

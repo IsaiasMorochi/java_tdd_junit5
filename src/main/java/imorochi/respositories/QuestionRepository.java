@@ -1,4 +1,4 @@
-package respositories;
+package imorochi.respositories;
 
 import java.util.List;
 

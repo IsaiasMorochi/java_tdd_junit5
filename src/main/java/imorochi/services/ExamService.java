@@ -1,6 +1,6 @@
-package services;
+package imorochi.services;
 
-import models.Exam;
+import imorochi.models.Exam;
 
 import java.util.Optional;
 

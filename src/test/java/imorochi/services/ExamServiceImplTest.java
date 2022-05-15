@@ -1,7 +1,7 @@
-package services;
+package imorochi.services;
 
-import mock.DATA;
-import models.Exam;
+import imorochi.mock.DATA;
+import imorochi.models.Exam;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,10 +12,10 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
-import respositories.ExamRepository;
-import respositories.ExamRepositoryImpl;
-import respositories.QuestionRepository;
-import respositories.QuestionRepositoryImpl;
+import imorochi.respositories.ExamRepository;
+import imorochi.respositories.ExamRepositoryImpl;
+import imorochi.respositories.QuestionRepository;
+import imorochi.respositories.QuestionRepositoryImpl;
 
 import java.util.*;
 
@@ -25,11 +25,17 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class ExamServiceImplTest {
 
-    @Mock
+    /*@Mock
     ExamRepository examRepository;
 
     @Mock
-    QuestionRepository questionRepository;
+    QuestionRepository questionRepository;*/
+
+    @Mock
+    ExamRepositoryImpl examRepository;
+
+    @Mock
+    QuestionRepositoryImpl questionRepository;
 
     @InjectMocks //solo injecta implementaciones(class)
     ExamServiceImpl service;
@@ -42,8 +48,8 @@ class ExamServiceImplTest {
     @BeforeEach
     void setUp() {
         //MockitoAnnotations.openMocks(this);
-        /*examRepository = mock(ExamRepository.class);
-        questionRepository = mock(QuestionRepository.class);
+        /*examRepository = imorochi.mock(ExamRepository.class);
+        questionRepository = imorochi.mock(QuestionRepository.class);
         service = new ExamServiceImpl(examRepository, questionRepository);*/
     }
 
@@ -60,8 +66,8 @@ class ExamServiceImplTest {
 
     @Test
     void findByExamByNameMockito() {
-        // solo se puede realizar mock de los metodos publicos y default (mismo package)
-        // No realiza mock de metodos: private, static, final.
+        // solo se puede realizar imorochi.mock de los metodos publicos y default (mismo package)
+        // No realiza imorochi.mock de metodos: private, static, final.
         when(examRepository.findAll()).thenReturn(DATA.EXAMS);
         Optional<Exam> exam = service.findByExamByName("Matemáticas");
 
@@ -224,7 +230,7 @@ class ExamServiceImplTest {
         Exam exam = DATA.EXAM;
         exam.setQuestions(DATA.QUESTIONS);
 
-        // Util doThrow para mock metodos void
+        // Util doThrow para imorochi.mock metodos void
         doThrow(IllegalArgumentException.class).when(questionRepository).saveAll(anyList());
         assertThrows(IllegalArgumentException.class, () -> {
             service.save(exam);
@@ -274,4 +280,15 @@ class ExamServiceImplTest {
         verify(questionRepository).saveAll(anyList());
     }
 
+    @Test
+    void testDoCallRealMethod() {
+        when(examRepository.findAll()).thenReturn(DATA.EXAMS);
+
+        when(questionRepository.findQuestionByExamId(anyLong())).thenReturn(DATA.QUESTIONS);
+        doCallRealMethod().when(questionRepository).findQuestionByExamId(anyLong());
+
+        Exam exam = service.findExamByNameWithQuestions("Matemáticas");
+        assertEquals(1L, exam.getId());
+        assertEquals("Matemáticas", exam.getName());
+    }
 }

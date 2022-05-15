@@ -1,6 +1,6 @@
-package models;
+package imorochi.models;
 
-import exceptions.DineroInsuficiente;
+import imorochi.exceptions.DineroInsuficiente;
 
 import java.math.BigDecimal;
 

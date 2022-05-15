@@ -1,6 +1,6 @@
-package respositories;
+package imorochi.respositories;
 
-import models.Exam;
+import imorochi.models.Exam;
 
 import java.util.List;
 

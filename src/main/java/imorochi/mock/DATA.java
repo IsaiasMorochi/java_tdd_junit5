@@ -1,6 +1,6 @@
-package mock;
+package imorochi.mock;
 
-import models.Exam;
+import imorochi.models.Exam;
 
 import java.util.Arrays;
 import java.util.List;

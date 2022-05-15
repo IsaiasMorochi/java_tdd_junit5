@@ -1,4 +1,4 @@
-package models;
+package imorochi.models;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
