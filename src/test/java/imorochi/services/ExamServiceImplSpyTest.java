@@ -58,35 +58,4 @@ class ExamServiceImplSpyTest {
         verify(questionRepository).findQuestionByExamId(anyLong());
     }
 
-    /*
-    * Verifica el orden de ejecucion con InOrder
-     */
-    @Test
-    void testOrderOfInvocation() {
-        when(examRepository.findAll()).thenReturn(DATA.EXAMS);
-
-        examService.findExamByNameWithQuestions("Matemáticas");
-        examService.findExamByNameWithQuestions("Lenguaje");
-
-        InOrder inOrder = inOrder(questionRepository);
-        inOrder.verify(questionRepository).findQuestionByExamId(1L);
-        inOrder.verify(questionRepository).findQuestionByExamId(2L);
-    }
-
-    @Test
-    void testOrderOfInvocationTwo() {
-        when(examRepository.findAll()).thenReturn(DATA.EXAMS);
-
-        examService.findExamByNameWithQuestions("Matemáticas"); // llama> findAll, findQuestionByExamId
-        examService.findExamByNameWithQuestions("Lenguaje");
-
-        InOrder inOrder = inOrder(examRepository, questionRepository);
-        inOrder.verify(examRepository).findAll();
-        inOrder.verify(questionRepository).findQuestionByExamId(1L);
-
-        inOrder.verify(examRepository).findAll();
-        inOrder.verify(questionRepository).findQuestionByExamId(2L);
-    }
-
-
 }

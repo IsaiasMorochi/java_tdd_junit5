@@ -42,6 +42,20 @@ public class ExamServiceImpl implements ExamService {
     }
 
     @Override
+    public Exam findExamByNameWithQuestionsTwoCall(String nameExam) {
+        log.info("[ExamServiceImpl] [findExamByNameWithQuestionsTwoCall]");
+        Optional<Exam> examOptional = findByExamByName(nameExam);
+        Exam exam = null;
+        if (examOptional.isPresent()) {
+            exam = examOptional.orElseThrow();
+            List<String> questions = questionRepository.findQuestionByExamId(examOptional.get().getId());
+            questionRepository.findQuestionByExamId(examOptional.get().getId());
+            exam.setQuestions(questions);
+        }
+        return exam;
+    }
+
+    @Override
     public Exam save(Exam exam) {
         if (!exam.getQuestions().isEmpty()) {
             questionRepository.saveAll(exam.getQuestions());

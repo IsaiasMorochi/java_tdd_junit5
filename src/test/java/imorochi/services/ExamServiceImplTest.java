@@ -352,4 +352,48 @@ class ExamServiceImplTest {
         inOrder.verify(questionRepository).findQuestionByExamId(2L);
     }
 
+    @Test
+    void testNumberOfInvocations() {
+        when(examRepository.findAll()).thenReturn(DATA.EXAMS);
+        examService.findExamByNameWithQuestions("Matemáticas");
+
+        verify(questionRepository).findQuestionByExamId(1L);
+        verify(questionRepository, times(1)).findQuestionByExamId(1L);
+        verify(questionRepository, atLeast(1)).findQuestionByExamId(1L);
+        verify(questionRepository, atLeastOnce()).findQuestionByExamId(1L);
+        verify(questionRepository, atMost(10)).findQuestionByExamId(1L);
+        verify(questionRepository, atMostOnce()).findQuestionByExamId(1L);
+    }
+
+    @Test
+    void testNumberOfInvocationsTwo() {
+        when(examRepository.findAll()).thenReturn(DATA.EXAMS);
+        examService.findExamByNameWithQuestionsTwoCall("Matemáticas");
+
+        //verify(questionRepository).findQuestionByExamId(1L); // falla
+        verify(questionRepository, times(2)).findQuestionByExamId(1L);
+        verify(questionRepository, atLeast(2)).findQuestionByExamId(1L);
+        verify(questionRepository, atLeastOnce()).findQuestionByExamId(1L);
+        verify(questionRepository, atMost(10)).findQuestionByExamId(1L);
+        //verify(questionRepository, atMostOnce()).findQuestionByExamId(1L); // falla
+    }
+
+    @Test
+    void testNumberOfInvocationsThree() {
+        when(examRepository.findAll()).thenReturn(Collections.emptyList());
+        examService.findExamByNameWithQuestions("Matemáticas");
+
+        verify(questionRepository, never()).findQuestionByExamId(1L);
+        verifyNoInteractions(questionRepository);
+
+        verify(examRepository).findAll();
+        verify(examRepository, times(1)).findAll();
+        verify(examRepository, atLeast(1)).findAll();
+        verify(examRepository, atLeastOnce()).findAll();
+        verify(examRepository, atMost(10)).findAll();
+        verify(examRepository, atMostOnce()).findAll();
+    }
+
+
+
 }
