@@ -38,7 +38,7 @@ class ExamServiceImplTest {
     QuestionRepositoryImpl questionRepository;
 
     @InjectMocks //solo injecta implementaciones(class)
-    ExamServiceImpl service;
+    ExamServiceImpl examService;
 
 
    /* Uso captor con DI
@@ -69,7 +69,7 @@ class ExamServiceImplTest {
         // solo se puede realizar imorochi.mock de los metodos publicos y default (mismo package)
         // No realiza imorochi.mock de metodos: private, static, final.
         when(examRepository.findAll()).thenReturn(DATA.EXAMS);
-        Optional<Exam> exam = service.findByExamByName("Matemáticas");
+        Optional<Exam> exam = examService.findByExamByName("Matemáticas");
 
         assertNotNull(exam);
         assertEquals(1L, exam.orElseThrow().getId());
@@ -81,7 +81,7 @@ class ExamServiceImplTest {
         List<Exam> data = Collections.emptyList();
 
         when(examRepository.findAll()).thenReturn(data);
-        Optional<Exam> exam = service.findByExamByName("Matemáticas");
+        Optional<Exam> exam = examService.findByExamByName("Matemáticas");
 
         assertFalse(exam.isPresent());
     }
@@ -91,7 +91,7 @@ class ExamServiceImplTest {
         when(examRepository.findAll()).thenReturn(DATA.EXAMS);
         when(questionRepository.findQuestionByExamId(anyLong())).thenReturn(DATA.QUESTIONS);
 
-        Optional<Exam> exam = Optional.of(service.findExamByNameWithQuestions("Matemáticas"));
+        Optional<Exam> exam = Optional.of(examService.findExamByNameWithQuestions("Matemáticas"));
         assertTrue(exam.isPresent());
         assertEquals(5, exam.orElseThrow().getQuestions().size());
         assertTrue(exam.get().getQuestions().contains("aritmetica"));
@@ -102,7 +102,7 @@ class ExamServiceImplTest {
         when(examRepository.findAll()).thenReturn(DATA.EXAMS);
         when(questionRepository.findQuestionByExamId(anyLong())).thenReturn(DATA.QUESTIONS);
 
-        Optional<Exam> exam = Optional.of(service.findExamByNameWithQuestions("Matemáticas"));
+        Optional<Exam> exam = Optional.of(examService.findExamByNameWithQuestions("Matemáticas"));
         assertTrue(exam.isPresent());
         assertEquals(5, exam.orElseThrow().getQuestions().size());
         assertTrue(exam.get().getQuestions().contains("aritmetica"));
@@ -119,7 +119,7 @@ class ExamServiceImplTest {
         when(questionRepository.findQuestionByExamId(anyLong())).thenReturn(DATA.QUESTIONS);
 
         // When
-        Exam exam = service.findExamByNameWithQuestions("Matemáticas");
+        Exam exam = examService.findExamByNameWithQuestions("Matemáticas");
 
         // Then
         assertNull(exam);
@@ -136,6 +136,7 @@ class ExamServiceImplTest {
         when(examRepository.save(any(Exam.class))).then(new Answer<Exam>() {
             // cuando se ejecuta el metodo save() le asignamos un id simulado
             Long secuencia = 1L;
+
             @Override
             public Exam answer(InvocationOnMock invocationOnMock) throws Throwable {
                 Exam exam = invocationOnMock.getArgument(0);
@@ -145,7 +146,7 @@ class ExamServiceImplTest {
         });
 
         // When
-        Exam exam = service.save(newExam);
+        Exam exam = examService.save(newExam);
 
         // Then
         assertNotNull(exam.getId());
@@ -165,7 +166,7 @@ class ExamServiceImplTest {
             service.findExamByNameWithQuestions("Matematicas");
         });*/
         IllegalArgumentException argumentException = assertThrows(IllegalArgumentException.class, () -> {
-            service.findExamByNameWithQuestions("Matemáticas");
+            examService.findExamByNameWithQuestions("Matemáticas");
         });
 
         assertEquals(IllegalArgumentException.class, argumentException.getClass());
@@ -177,7 +178,7 @@ class ExamServiceImplTest {
     void testArgumentMatchersOne() {
         when(examRepository.findAll()).thenReturn(DATA.EXAMS);
         when(questionRepository.findQuestionByExamId(anyLong())).thenReturn(DATA.QUESTIONS);
-        service.findExamByNameWithQuestions("Matemáticas");
+        examService.findExamByNameWithQuestions("Matemáticas");
 
         verify(examRepository).findAll();
         verify(questionRepository).findQuestionByExamId(ArgumentMatchers.argThat(arg -> arg != null && arg.equals(1L)));
@@ -189,7 +190,7 @@ class ExamServiceImplTest {
     void testArgumentMatchersTwo() {
         when(examRepository.findAll()).thenReturn(DATA.EXAMS_ID_NEGATIVO);
         when(questionRepository.findQuestionByExamId(anyLong())).thenReturn(DATA.QUESTIONS);
-        service.findExamByNameWithQuestions("Matemáticas");
+        examService.findExamByNameWithQuestions("Matemáticas");
 
         // Util para usar Matchers con mensaje personalizado
         verify(examRepository).findAll();
@@ -217,7 +218,7 @@ class ExamServiceImplTest {
     @Test
     void testArgumentCaptor() {
         when(examRepository.findAll()).thenReturn(DATA.EXAMS);
-        service.findExamByNameWithQuestions("Matemáticas");
+        examService.findExamByNameWithQuestions("Matemáticas");
 
         ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
         verify(questionRepository).findQuestionByExamId(captor.capture());
@@ -233,22 +234,22 @@ class ExamServiceImplTest {
         // Util doThrow para imorochi.mock metodos void
         doThrow(IllegalArgumentException.class).when(questionRepository).saveAll(anyList());
         assertThrows(IllegalArgumentException.class, () -> {
-            service.save(exam);
+            examService.save(exam);
         });
     }
 
     @Test
     void testDoAnswer() {
-       when(examRepository.findAll()).thenReturn(DATA.EXAMS);
-       doAnswer(invocationOnMock -> {
-           Long id = invocationOnMock.getArgument(0);
-           return id == 1L ? DATA.QUESTIONS : Collections.emptyList();
-       }).when(questionRepository).findQuestionByExamId(anyLong());
+        when(examRepository.findAll()).thenReturn(DATA.EXAMS);
+        doAnswer(invocationOnMock -> {
+            Long id = invocationOnMock.getArgument(0);
+            return id == 1L ? DATA.QUESTIONS : Collections.emptyList();
+        }).when(questionRepository).findQuestionByExamId(anyLong());
 
-       Exam exam = service.findExamByNameWithQuestions("Matemáticas");
-       assertEquals(5, exam.getQuestions().size());
-       assertEquals(1L, exam.getId());
-       assertEquals("Matemáticas", exam.getName());
+        Exam exam = examService.findExamByNameWithQuestions("Matemáticas");
+        assertEquals(5, exam.getQuestions().size());
+        assertEquals(1L, exam.getId());
+        assertEquals("Matemáticas", exam.getName());
     }
 
     @Test
@@ -260,6 +261,7 @@ class ExamServiceImplTest {
         doAnswer(new Answer<Exam>() {
             // cuando se ejecuta el metodo save() le asignamos un id simulado
             Long secuencia = 1L;
+
             @Override
             public Exam answer(InvocationOnMock invocationOnMock) throws Throwable {
                 Exam exam = invocationOnMock.getArgument(0);
@@ -269,7 +271,7 @@ class ExamServiceImplTest {
         }).when(examRepository).save(any(Exam.class));
 
         // When
-        Exam exam = service.save(newExam);
+        Exam exam = examService.save(newExam);
 
         // Then
         assertNotNull(exam.getId());
@@ -287,17 +289,17 @@ class ExamServiceImplTest {
         when(questionRepository.findQuestionByExamId(anyLong())).thenReturn(DATA.QUESTIONS);
         doCallRealMethod().when(questionRepository).findQuestionByExamId(anyLong());
 
-        Exam exam = service.findExamByNameWithQuestions("Matemáticas");
+        Exam exam = examService.findExamByNameWithQuestions("Matemáticas");
         assertEquals(1L, exam.getId());
         assertEquals("Matemáticas", exam.getName());
     }
 
     /*
-    * Mock : 100% simulado y todos sus metodos deben ser mockeados o simular con When Do
-    * Spy : Simulamos con when y Do pero el resto realiza la llamada real al metodo que no definamos la simulacion
-    *       requiere al metodo real de la clase concreta y no una interfaz sino daria null.
-    *       Cuando se usa spy no usar when , usar do
-    * */
+     * Mock : 100% simulado y todos sus metodos deben ser mockeados o simular con When Do
+     * Spy : Simulamos con when y Do pero el resto realiza la llamada real al metodo que no definamos la simulacion
+     *       requiere al metodo real de la clase concreta y no una interfaz sino daria null.
+     *       Cuando se usa spy no usar when , usar do
+     * */
     @Test
     void testSpy() {
         ExamRepository examRepository = spy(ExamRepositoryImpl.class);
@@ -319,4 +321,35 @@ class ExamServiceImplTest {
         verify(examRepository).findAll();
         verify(questionRepository).findQuestionByExamId(anyLong());
     }
+
+    /*
+     * Verifica el orden de ejecucion con InOrder
+     */
+    @Test
+    void testOrderOfInvocation() {
+        when(examRepository.findAll()).thenReturn(DATA.EXAMS);
+
+        examService.findExamByNameWithQuestions("Matemáticas");
+        examService.findExamByNameWithQuestions("Lenguaje");
+
+        InOrder inOrder = inOrder(questionRepository);
+        inOrder.verify(questionRepository).findQuestionByExamId(1L);
+        inOrder.verify(questionRepository).findQuestionByExamId(2L);
+    }
+
+    @Test
+    void testOrderOfInvocationTwo() {
+        when(examRepository.findAll()).thenReturn(DATA.EXAMS);
+
+        examService.findExamByNameWithQuestions("Matemáticas"); // llama> findAll, findQuestionByExamId
+        examService.findExamByNameWithQuestions("Lenguaje");
+
+        InOrder inOrder = inOrder(examRepository, questionRepository);
+        inOrder.verify(examRepository).findAll();
+        inOrder.verify(questionRepository).findQuestionByExamId(1L);
+
+        inOrder.verify(examRepository).findAll();
+        inOrder.verify(questionRepository).findQuestionByExamId(2L);
+    }
+
 }
