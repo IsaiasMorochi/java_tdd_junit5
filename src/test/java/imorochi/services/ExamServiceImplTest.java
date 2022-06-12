@@ -291,4 +291,32 @@ class ExamServiceImplTest {
         assertEquals(1L, exam.getId());
         assertEquals("Matemáticas", exam.getName());
     }
+
+    /*
+    * Mock : 100% simulado y todos sus metodos deben ser mockeados o simular con When Do
+    * Spy : Simulamos con when y Do pero el resto realiza la llamada real al metodo que no definamos la simulacion
+    *       requiere al metodo real de la clase concreta y no una interfaz sino daria null.
+    *       Cuando se usa spy no usar when , usar do
+    * */
+    @Test
+    void testSpy() {
+        ExamRepository examRepository = spy(ExamRepositoryImpl.class);
+        QuestionRepository questionRepository = spy(QuestionRepositoryImpl.class);
+
+        ExamService examService = new ExamServiceImpl(examRepository, questionRepository);
+
+        // mock
+        List<String> questions = Arrays.asList("aritmetica");
+        //when(questionRepository.findQuestionByExamId(anyLong())).thenReturn(questions);
+        doReturn(questions).when(questionRepository).findQuestionByExamId(anyLong());
+
+        Exam exam = examService.findExamByNameWithQuestions("Matemáticas");
+        assertEquals(1, exam.getId());
+        assertEquals("Matemáticas", exam.getName());
+        assertEquals(1, exam.getQuestions().size());
+        assertTrue(exam.getQuestions().contains("aritmetica"));
+
+        verify(examRepository).findAll();
+        verify(questionRepository).findQuestionByExamId(anyLong());
+    }
 }
